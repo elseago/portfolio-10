@@ -24,6 +24,7 @@ library(raster)
 library(dplyr)
 library(spData)
 library(spDataLarge)
+library(tidyverse)
 ```
 
 
@@ -147,6 +148,105 @@ server = function(input, output) {
 
 
 End of the tutorial, beginning of trying to extend!
+
+
+```{r}
+urban_agglomerations
+```
+
+
+
+
+```{r}
+shp <- st_read("acs_2012_2016_county_us_B27001/acs_2012_2016_county_us_B27001.shp")
+```
+
+
+```{r}
+tm_shape(shp)+
+  tm_polygons()+
+  tmap_options(check.and.fix = TRUE)
+```
+I'm not sure why the whole world is showing up, it makes shifting Alaska in not make sense.
+```{r}
+tm_shape(shp)+
+  tm_polygons("un_2012")+
+  tmap_options(check.and.fix = TRUE)
+```
+
+```{r}
+tm_shape(shp)+
+  tm_bubbles("un_2012")
+```
+
+
+
+```{r}
+colony <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-01-11/colony.csv')
+stressor <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-01-11/stressor.csv')
+```
+
+```{r}
+colony_jan_2015 <- colony %>% 
+  filter(
+    year == "2015" ,
+    months == "January-March" ,
+    state != "Other States" ,
+    state != "United States"
+  )
+
+colony_jan_2015
+```
+
+
+
+
+
+```{r}
+shp
+
+```
+
+```{r}
+colony_jan_2015
+```
+
+
+
+```{r}
+SHP <- as_tibble(shp)
+```
+
+```{r}
+SHP
+```
+
+
+```{r}
+
+newSHP <- SHP %>% 
+  separate(NAME , sep = "," , into = c("county" , "state"))
+
+newSHP
+```
+
+
+
+
+```{r}
+  full_join(
+    colony_jan_2015 ,
+    newSHP ,
+    by = "state" ,
+    copy = FALSE,
+    suffix = c (".x" , ".y"),
+   keep = FALSE ,
+    na_matches = c("na" , "never")
+  )
+```
+
+
+
 
 
 
